@@ -1,0 +1,8 @@
+[
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\HexHack.dir\\main.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\main.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/main.cpp",
+  "output": "CMakeFiles/HexHack.dir/main.cpp.obj"
+}
+]
