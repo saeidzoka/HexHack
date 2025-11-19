@@ -1,8 +1,50 @@
 [
 {
   "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
-  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\HexHack.dir\\main.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\main.cpp",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\main.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\main.cpp",
   "file": "D:/Works/MyEmbeddedSystem/HexHacker/main.cpp",
-  "output": "CMakeFiles/HexHack.dir/main.cpp.obj"
+  "output": "CMakeFiles/HexHacker.dir/main.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\imgui.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\imgui.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/imgui.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/imgui.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\imgui_demo.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\imgui_demo.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/imgui_demo.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/imgui_demo.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\imgui_draw.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\imgui_draw.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/imgui_draw.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/imgui_draw.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\imgui_tables.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\imgui_tables.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/imgui_tables.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/imgui_tables.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\imgui_widgets.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\imgui_widgets.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/imgui_widgets.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/imgui_widgets.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\backends\\imgui_impl_sdl2.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\backends\\imgui_impl_sdl2.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/backends/imgui_impl_sdl2.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/backends/imgui_impl_sdl2.cpp.obj"
+},
+{
+  "directory": "D:/Works/MyEmbeddedSystem/HexHacker/out/build/GCC 14.2.0 x86_64-w64-mingw32 (mingw64)",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/HexHacker.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\HexHacker.dir\\vendor\\imgui\\backends\\imgui_impl_sdlrenderer2.cpp.obj -c D:\\Works\\MyEmbeddedSystem\\HexHacker\\vendor\\imgui\\backends\\imgui_impl_sdlrenderer2.cpp",
+  "file": "D:/Works/MyEmbeddedSystem/HexHacker/vendor/imgui/backends/imgui_impl_sdlrenderer2.cpp",
+  "output": "CMakeFiles/HexHacker.dir/vendor/imgui/backends/imgui_impl_sdlrenderer2.cpp.obj"
 }
 ]
