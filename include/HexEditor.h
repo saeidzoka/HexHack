@@ -32,4 +32,8 @@ private:
     char NibbleToChar(uint8_t nibble);
     uint8_t CharToNibble(char c);
 
+    // Show native file dialogs (Windows)
+    std::string ShowOpenFileDialog();
+    std::string ShowSaveFileDialog(const char* defaultName = nullptr);
+
 };

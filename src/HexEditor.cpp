@@ -3,6 +3,12 @@
 #include <fstream>
 #include <cstring>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <commdlg.h>
+#endif
+
 
 HexEditor::HexEditor()
     : m_IsModified(false)
@@ -27,7 +33,10 @@ void HexEditor::RenderMenuBar() {
             NewFile();
         }
         if (ImGui::MenuItem("Open", "Ctrl+O")) {
-            LoadFile("test.bin");
+            std::string path = ShowOpenFileDialog();
+            if (!path.empty()) {
+                LoadFile(path);
+            }
         }
         if (ImGui::MenuItem("Save", "Ctrl+S", false, m_IsModified)) {
             if (!m_CurrentFile.empty()) {
@@ -35,7 +44,10 @@ void HexEditor::RenderMenuBar() {
             }
         }
         if (ImGui::MenuItem("Save As")) {
-            // TODO: Add file dialog
+            std::string path = ShowSaveFileDialog(m_CurrentFile.empty() ? "untitled.bin" : m_CurrentFile.c_str());
+            if (!path.empty()) {
+                SaveFile(path);
+            }
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Exit")) {
@@ -220,4 +232,49 @@ uint8_t HexEditor::CharToNibble(char c) {
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
     return 0;
+}
+
+std::string HexEditor::ShowOpenFileDialog() {
+#ifdef _WIN32
+    OPENFILENAMEA ofn;
+    CHAR szFile[MAX_PATH] = {0};
+    ZeroMemory(&ofn, sizeof(ofn));
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = nullptr;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = "Binary and HEX Files\0*.bin;*.hex\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (GetOpenFileNameA(&ofn)) {
+        return std::string(szFile);
+    }
+#endif
+    return std::string();
+}
+
+std::string HexEditor::ShowSaveFileDialog(const char* defaultName) {
+#ifdef _WIN32
+    OPENFILENAMEA ofn;
+    CHAR szFile[MAX_PATH] = {0};
+    if (defaultName) {
+        strncpy_s(szFile, defaultName, _TRUNCATE);
+    }
+    ZeroMemory(&ofn, sizeof(ofn));
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = nullptr;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = "Binary Files\0*.bin\0HEX Files\0*.hex\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+    if (GetSaveFileNameA(&ofn)) {
+        return std::string(szFile);
+    }
+#endif
+    return std::string();
 }
