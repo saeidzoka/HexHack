@@ -56,7 +56,8 @@ int main(int argc, char* argv[]) {
         // Parent window with menu bar
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize, ImGuiCond_FirstUseEver);
-        ImGui::Begin("HexEditor", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+        // Disable parent scrollbar so only the hex editor child window scrolls.
+        ImGui::Begin("HexEditor", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
         // Render menu bar
         if (ImGui::BeginMenuBar()) {
@@ -66,8 +67,8 @@ int main(int argc, char* argv[]) {
 
         ImGui::Separator();
 
-        // Hex editor content area
-        ImGui::BeginChild("HexEditorContent");
+        // Hex editor content area. Reserve space for status bar by reducing child height.
+        ImGui::BeginChild("HexEditorContent", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 2), true, ImGuiWindowFlags_HorizontalScrollbar);
         hexEditor.Render();
         ImGui::EndChild();
 
