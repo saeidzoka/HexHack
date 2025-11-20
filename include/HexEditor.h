@@ -12,6 +12,7 @@ public:
     void Render();
     void RenderMenuBar();
     void RenderStatusBar();
+    void RenderOffsetPanel();
 
     bool LoadFile(const std::string &filepath);
     bool SaveFile(const std::string &filepath);
@@ -25,6 +26,7 @@ private:
     size_t m_SelectedByte;
     bool m_EditingNibble;
     int m_BytesPerRow;
+    uint64_t m_AddressOffset;
 
     void RenderHexView();
     void RenderASCIIView();

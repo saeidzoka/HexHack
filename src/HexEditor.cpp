@@ -24,7 +24,25 @@ HexEditor::~HexEditor(){
 }
 
 void HexEditor::Render(){
+    RenderOffsetPanel();
     RenderHexView();
+}
+
+void HexEditor::RenderOffsetPanel() {
+    ImGui::BeginChild("OffsetPanel", ImVec2(0, ImGui::GetFrameHeightWithSpacing()), false);
+    // Show offset in hex and decimal; both edit the same value.
+    ImGui::Text("Address Offset:");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(150);
+    ImGui::InputScalar("##offset_hex", ImGuiDataType_U64, &m_AddressOffset, nullptr, nullptr, "%08llX");
+    ImGui::SameLine();
+    ImGui::InputScalar("##offset_dec", ImGuiDataType_U64, &m_AddressOffset, nullptr, nullptr, "%llu");
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+        m_AddressOffset = 0;
+    }
+    ImGui::EndChild();
 }
 
 void HexEditor::RenderMenuBar() {
@@ -102,8 +120,9 @@ void HexEditor::RenderHexView() {
         for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
             size_t offset = row * m_BytesPerRow;
             
-            // Address column
-            ImGui::Text("%08X:", (unsigned int)offset);
+            // Address column (apply offset)
+            unsigned long long displayAddr = (unsigned long long)(m_AddressOffset + offset);
+            ImGui::Text("%08llX:", displayAddr);
             ImGui::SameLine();
             
             // Hex bytes
@@ -167,9 +186,10 @@ void HexEditor::RenderHexView() {
 
 void HexEditor::RenderStatusBar() {
     if (!m_Data.empty()) {
-        ImGui::Text("Size: %zu bytes | Selected: 0x%08X | Value: 0x%02X (%d) '%c'", 
+        unsigned long long selectedAddr = (unsigned long long)(m_AddressOffset + m_SelectedByte);
+        ImGui::Text("Size: %zu bytes | Selected: 0x%08llX | Value: 0x%02X (%d) '%c'", 
             m_Data.size(), 
-            (unsigned int)m_SelectedByte,
+            selectedAddr,
             m_SelectedByte < m_Data.size() ? m_Data[m_SelectedByte] : 0,
             m_SelectedByte < m_Data.size() ? m_Data[m_SelectedByte] : 0,
             (m_SelectedByte < m_Data.size() && m_Data[m_SelectedByte] >= 32 && m_Data[m_SelectedByte] < 127) 
