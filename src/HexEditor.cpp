@@ -114,23 +114,25 @@ void HexEditor::RenderHexView() {
                     ImGui::Text("  ");
                 } else {
                     ImGui::PushID(index);
-                    
-                    // Highlight selected byte
+
+                    // Highlight selected byte. Track whether we pushed so we only pop when appropriate.
+                    bool pushedStyle = false;
                     if (index == m_SelectedByte) {
                         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 0.8f, 1.0f));
+                        pushedStyle = true;
                     }
-                    
+
                     char buf[3];
                     snprintf(buf, sizeof(buf), "%02X", m_Data[index]);
-                    
+
                     if (ImGui::Button(buf, ImVec2(cellWidth, 0))) {
                         m_SelectedByte = index;
                     }
-                    
-                    if (index == m_SelectedByte) {
+
+                    if (pushedStyle) {
                         ImGui::PopStyleColor();
                     }
-                    
+
                     ImGui::PopID();
                 }
                 
