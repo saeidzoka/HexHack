@@ -21,13 +21,22 @@ set(IMGUI_SOURCES
     ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp
     ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer2.cpp
 )
-message(STATUS "SDL2 Includes found at: ${SDL2_INCLUDE_DIRS}")
-add_executable(HexHacker main.cpp ${IMGUI_SOURCES})
+
+# Add your main source file
+set(PROJECT_SOURCES
+    src/main.cpp
+    # Add other source files from src/ folder here as needed
+    # src/your_file.cpp
+    src/HexEditor.cpp
+)
+#message(STATUS "SDL2 Includes found at: ${SDL2_INCLUDE_DIRS}")
+add_executable(HexHacker ${PROJECT_SOURCES} ${IMGUI_SOURCES})
 
 target_include_directories(HexHacker PRIVATE 
     ${SDL2_INCLUDE_DIRS}
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
+    include  
 )
 
 target_link_libraries(HexHacker PRIVATE 
