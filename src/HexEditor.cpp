@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include <fstream>
 #include <cstring>
+#include <cstdlib>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -16,6 +17,9 @@ HexEditor::HexEditor()
     , m_EditingNibble(false)
     , m_BytesPerRow(16)
     , m_AddressOffset(0)
+    , m_EditingIndex(-1)
+    , m_EditingActive(false)
+    , m_EditingOriginalValue(0)
     {
         NewFile(256);
     }
@@ -135,23 +139,78 @@ void HexEditor::RenderHexView() {
                 } else {
                     ImGui::PushID(index);
 
-                    // Highlight selected byte. Track whether we pushed so we only pop when appropriate.
-                    bool pushedStyle = false;
+                    // Determine background color: modified cells -> light red, selected -> blue (selected overrides)
+                    bool pushedColor = false;
+                    ImVec4 modifiedColor = ImVec4(0.8f, 0.6f, 0.6f, 1.0f);
+                    ImVec4 selectedColor = ImVec4(0.3f, 0.5f, 0.8f, 1.0f);
+
                     if (index == m_SelectedByte) {
-                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.5f, 0.8f, 1.0f));
-                        pushedStyle = true;
+                        ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+                        pushedColor = true;
+                    } else if (index < m_ModifiedFlags.size() && m_ModifiedFlags[index]) {
+                        ImGui::PushStyleColor(ImGuiCol_Button, modifiedColor);
+                        pushedColor = true;
                     }
 
-                    char buf[3];
-                    snprintf(buf, sizeof(buf), "%02X", m_Data[index]);
+                    // If this cell is being edited, show an InputText instead of a Button
+                    if (m_EditingIndex == (int)index) {
+                        // prepare edit buffer with current value if just entered
+                        if (!m_EditingActive) {
+                            snprintf(m_EditBuffer, sizeof(m_EditBuffer), "%02X", m_Data[index]);
+                        }
 
-                    if (ImGui::Button(buf, ImVec2(cellWidth, 0))) {
-                        m_SelectedByte = index;
+                        ImGui::PushItemWidth(cellWidth + 8);
+                        bool enterPressed = ImGui::InputText("##edit", m_EditBuffer, sizeof(m_EditBuffer), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
+                        bool activeNow = ImGui::IsItemActive();
+
+                        // If Enter pressed, commit immediately
+                        if (enterPressed) {
+                            unsigned long val = strtoul(m_EditBuffer, nullptr, 16);
+                            if (val <= 0xFF) {
+                                if ((uint8_t)val != m_EditingOriginalValue) {
+                                    m_Data[index] = (uint8_t)val;
+                                    if (index < m_ModifiedFlags.size()) m_ModifiedFlags[index] = 1;
+                                    m_IsModified = true;
+                                }
+                            }
+                            m_EditingIndex = -1;
+                            m_EditingActive = false;
+                        } else {
+                            // commit on focus loss (clicked elsewhere)
+                            if (m_EditingActive && !activeNow) {
+                                unsigned long val = strtoul(m_EditBuffer, nullptr, 16);
+                                if (val <= 0xFF) {
+                                    if ((uint8_t)val != m_EditingOriginalValue) {
+                                        m_Data[index] = (uint8_t)val;
+                                        if (index < m_ModifiedFlags.size()) m_ModifiedFlags[index] = 1;
+                                        m_IsModified = true;
+                                    }
+                                }
+                                m_EditingIndex = -1;
+                                m_EditingActive = false;
+                            } else {
+                                m_EditingActive = activeNow;
+                            }
+                        }
+
+                        ImGui::PopItemWidth();
+                    } else {
+                        char buf[3];
+                        snprintf(buf, sizeof(buf), "%02X", m_Data[index]);
+
+                        if (ImGui::Button(buf, ImVec2(cellWidth, 0))) {
+                            m_SelectedByte = index;
+                        }
+
+                        // detect double click to enter edit mode
+                        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                            m_EditingIndex = (int)index;
+                            m_EditingActive = false; // will set on next InputText
+                            m_EditingOriginalValue = m_Data[index];
+                        }
                     }
 
-                    if (pushedStyle) {
-                        ImGui::PopStyleColor();
-                    }
+                    if (pushedColor) ImGui::PopStyleColor();
 
                     ImGui::PopID();
                 }
@@ -219,6 +278,11 @@ bool HexEditor::LoadFile(const std::string& filepath) {
     m_CurrentFile = filepath;
     m_IsModified = false;
     m_SelectedByte = 0;
+    m_EditingIndex = -1;
+    m_EditingActive = false;
+    m_ModifiedFlags.clear();
+    m_ModifiedFlags.resize(m_Data.size(), 0);
+    m_EditingOriginalValue = 0;
     
     return true;
 }
@@ -234,6 +298,8 @@ bool HexEditor::SaveFile(const std::string& filepath) {
     
     m_IsModified = false;
     m_CurrentFile = filepath;
+    // After saving, clear modified flags
+    for (size_t i = 0; i < m_ModifiedFlags.size(); ++i) m_ModifiedFlags[i] = 0;
     
     return true;
 }
@@ -245,6 +311,11 @@ void HexEditor::NewFile(size_t size) {
     m_IsModified = false;
     m_SelectedByte = 0;
     m_AddressOffset = 0;
+    m_EditingIndex = -1;
+    m_EditingActive = false;
+    m_ModifiedFlags.clear();
+    m_ModifiedFlags.resize(m_Data.size(), 0);
+    m_EditingOriginalValue = 0;
 }
 
 char HexEditor::NibbleToChar(uint8_t nibble) {

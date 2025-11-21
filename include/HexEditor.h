@@ -27,6 +27,12 @@ private:
     bool m_EditingNibble;
     int m_BytesPerRow;
     uint64_t m_AddressOffset;
+    // Editing state
+    int m_EditingIndex; // -1 when not editing
+    char m_EditBuffer[4]; // 2 hex chars + optional prefix + null
+    std::vector<uint8_t> m_ModifiedFlags; // per-byte modified marker
+    bool m_EditingActive;
+    uint8_t m_EditingOriginalValue;
 
     void RenderHexView();
     void RenderASCIIView();
