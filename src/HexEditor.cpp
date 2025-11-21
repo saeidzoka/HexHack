@@ -15,6 +15,7 @@ HexEditor::HexEditor()
     , m_SelectedByte(0)
     , m_EditingNibble(false)
     , m_BytesPerRow(16)
+    , m_AddressOffset(0)
     {
         NewFile(256);
     }
@@ -243,6 +244,7 @@ void HexEditor::NewFile(size_t size) {
     m_CurrentFile.clear();
     m_IsModified = false;
     m_SelectedByte = 0;
+    m_AddressOffset = 0;
 }
 
 char HexEditor::NibbleToChar(uint8_t nibble) {
