@@ -3,6 +3,9 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include <cctype>
+#include <sstream>
+#include <algorithm>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -20,6 +23,8 @@ HexEditor::HexEditor()
     , m_EditingIndex(-1)
     , m_EditingActive(false)
     , m_EditingOriginalValue(0)
+    , m_CurrentSearchIndex(-1)
+    , m_ScrollToSelected(false)
     {
         NewFile(256);
     }
@@ -34,7 +39,7 @@ void HexEditor::Render(){
 }
 
 void HexEditor::RenderOffsetPanel() {
-    ImGui::BeginChild("OffsetPanel", ImVec2(0, ImGui::GetFrameHeightWithSpacing()), false);
+    ImGui::BeginChild("OffsetPanel", ImVec2(0, ImGui::GetFrameHeightWithSpacing()*2 + 6), false);
     // Show offset in hex and decimal; both edit the same value.
     ImGui::Text("Address Offset:");
     ImGui::SameLine();
@@ -47,6 +52,49 @@ void HexEditor::RenderOffsetPanel() {
     if (ImGui::Button("Reset")) {
         m_AddressOffset = 0;
     }
+    ImGui::SameLine();
+    ImGui::Text(" ");
+
+    // ----- Search UI -----
+    ImGui::NewLine();
+    ImGui::Text("Search (hex bytes, e.g. 'DE AD BE EF'):");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(300);
+    ImGui::InputText("##search_pattern", m_SearchPatternBuf, sizeof(m_SearchPatternBuf));
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if (ImGui::Button("Find All")) {
+        std::vector<uint8_t> pattern;
+        if (ParseHexPattern(m_SearchPatternBuf, pattern) && !pattern.empty()) {
+            FindAllMatches(pattern);
+            if (!m_SearchResults.empty()) {
+                m_CurrentSearchIndex = 0;
+                m_SelectedByte = m_SearchResults[0];
+                m_ScrollToSelected = true;
+            } else {
+                m_CurrentSearchIndex = -1;
+            }
+        } else {
+            m_SearchResults.clear();
+            m_CurrentSearchIndex = -1;
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Prev") && !m_SearchResults.empty()) {
+        if (m_CurrentSearchIndex <= 0) m_CurrentSearchIndex = (int)m_SearchResults.size() - 1;
+        else --m_CurrentSearchIndex;
+        m_SelectedByte = m_SearchResults[m_CurrentSearchIndex];
+        m_ScrollToSelected = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Next") && !m_SearchResults.empty()) {
+        if (m_CurrentSearchIndex < 0) m_CurrentSearchIndex = 0;
+        else m_CurrentSearchIndex = (m_CurrentSearchIndex + 1) % (int)m_SearchResults.size();
+        m_SelectedByte = m_SearchResults[m_CurrentSearchIndex];
+        m_ScrollToSelected = true;
+    }
+    ImGui::SameLine();
+    ImGui::Text("Matches: %zu", m_SearchResults.size());
     ImGui::EndChild();
 }
 
@@ -139,13 +187,24 @@ void HexEditor::RenderHexView() {
                 } else {
                     ImGui::PushID(index);
 
-                    // Determine background color: modified cells -> light red, selected -> blue (selected overrides)
+                    // Determine background color priority: selected -> current search match -> other search matches -> modified -> default
                     bool pushedColor = false;
-                    ImVec4 modifiedColor = ImVec4(0.8f, 0.6f, 0.6f, 1.0f);
                     ImVec4 selectedColor = ImVec4(0.3f, 0.5f, 0.8f, 1.0f);
+                    ImVec4 searchCurrentColor = ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
+                    ImVec4 searchOtherColor = ImVec4(0.9f, 0.9f, 0.5f, 1.0f);
+                    ImVec4 modifiedColor = ImVec4(0.8f, 0.6f, 0.6f, 1.0f);
+
+                    bool isCurrentSearchMatch = (m_CurrentSearchIndex >= 0 && m_CurrentSearchIndex < (int)m_SearchResults.size() && m_SearchResults[m_CurrentSearchIndex] == index);
+                    bool isAnySearchMatch = std::find(m_SearchResults.begin(), m_SearchResults.end(), index) != m_SearchResults.end();
 
                     if (index == m_SelectedByte) {
                         ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+                        pushedColor = true;
+                    } else if (isCurrentSearchMatch) {
+                        ImGui::PushStyleColor(ImGuiCol_Button, searchCurrentColor);
+                        pushedColor = true;
+                    } else if (isAnySearchMatch) {
+                        ImGui::PushStyleColor(ImGuiCol_Button, searchOtherColor);
                         pushedColor = true;
                     } else if (index < m_ModifiedFlags.size() && m_ModifiedFlags[index]) {
                         ImGui::PushStyleColor(ImGuiCol_Button, modifiedColor);
@@ -191,6 +250,12 @@ void HexEditor::RenderHexView() {
                             } else {
                                 m_EditingActive = activeNow;
                             }
+                        }
+
+                        // If we need to scroll to selected (set when jumping to a search result), do it when we render the selected byte
+                        if (m_ScrollToSelected && index == m_SelectedByte) {
+                            ImGui::SetScrollHereY();
+                            m_ScrollToSelected = false;
                         }
 
                         ImGui::PopItemWidth();
@@ -283,6 +348,10 @@ bool HexEditor::LoadFile(const std::string& filepath) {
     m_ModifiedFlags.clear();
     m_ModifiedFlags.resize(m_Data.size(), 0);
     m_EditingOriginalValue = 0;
+    m_SearchPatternBuf[0] = '\0';
+    m_SearchResults.clear();
+    m_CurrentSearchIndex = -1;
+    m_ScrollToSelected = false;
     
     return true;
 }
@@ -316,6 +385,10 @@ void HexEditor::NewFile(size_t size) {
     m_ModifiedFlags.clear();
     m_ModifiedFlags.resize(m_Data.size(), 0);
     m_EditingOriginalValue = 0;
+    m_SearchPatternBuf[0] = '\0';
+    m_SearchResults.clear();
+    m_CurrentSearchIndex = -1;
+    m_ScrollToSelected = false;
 }
 
 char HexEditor::NibbleToChar(uint8_t nibble) {
@@ -327,6 +400,37 @@ uint8_t HexEditor::CharToNibble(char c) {
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
     return 0;
+}
+
+bool HexEditor::ParseHexPattern(const char* input, std::vector<uint8_t>& out) {
+    out.clear();
+    if (!input) return false;
+    std::string hexs;
+    for (const char* p = input; *p; ++p) {
+        if (isxdigit((unsigned char)*p)) hexs.push_back((char)toupper((unsigned char)*p));
+    }
+    if (hexs.empty()) return false;
+    // If odd, prepend a '0'
+    if (hexs.size() % 2 != 0) hexs.insert(hexs.begin(), '0');
+
+    for (size_t i = 0; i + 1 < hexs.size(); i += 2) {
+        uint8_t hi = CharToNibble(hexs[i]);
+        uint8_t lo = CharToNibble(hexs[i+1]);
+        out.push_back((uint8_t)((hi << 4) | lo));
+    }
+    return !out.empty();
+}
+
+void HexEditor::FindAllMatches(const std::vector<uint8_t>& pattern) {
+    m_SearchResults.clear();
+    if (pattern.empty() || m_Data.empty() || pattern.size() > m_Data.size()) return;
+    for (size_t i = 0; i + pattern.size() <= m_Data.size(); ++i) {
+        bool ok = true;
+        for (size_t j = 0; j < pattern.size(); ++j) {
+            if (m_Data[i+j] != pattern[j]) { ok = false; break; }
+        }
+        if (ok) m_SearchResults.push_back(i);
+    }
 }
 
 std::string HexEditor::ShowOpenFileDialog() {

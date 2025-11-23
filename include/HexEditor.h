@@ -34,6 +34,16 @@ private:
     bool m_EditingActive;
     uint8_t m_EditingOriginalValue;
 
+    // Search state
+    char m_SearchPatternBuf[256]; // human hex pattern input
+    std::vector<size_t> m_SearchResults;
+    int m_CurrentSearchIndex; // -1 when none selected
+    bool m_ScrollToSelected;
+
+    // Search helpers
+    bool ParseHexPattern(const char* input, std::vector<uint8_t>& out);
+    void FindAllMatches(const std::vector<uint8_t>& pattern);
+
     void RenderHexView();
     void RenderASCIIView();
 
